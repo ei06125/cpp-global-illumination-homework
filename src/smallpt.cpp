@@ -2,8 +2,21 @@
 #include <stdio.h>  //        Remove "-fopenmp" for g++ version < 4.2
 #include <stdlib.h> // Make : g++ -O3 -fopenmp smallpt.cpp -o smallpt
 
-struct Vec {        // Usage: time ./smallpt 5000 && xv image.ppm
-  double x, y, z;   // position, also color (r,g,b)
+#if defined(_WIN32)
+#include <random>
+double erand48(unsigned short xsubi[3]) {
+  std::random_device
+      rd; // Will be used to obtain a seed for the random number engine
+  std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+  std::uniform_real_distribution<> dis(0.0);
+  return dis(gen);
+}
+
+#define M_PI 3.14159265358979323846264338327950288
+#endif
+
+struct Vec {      // Usage: time ./smallpt 5000 && xv image.ppm
+  double x, y, z; // position, also color (r,g,b)
   Vec(double x_ = 0, double y_ = 0, double z_ = 0) {
     x = x_;
     y = y_;
