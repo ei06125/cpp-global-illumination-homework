@@ -33,22 +33,22 @@ struct Vec
 
   auto operator-(const Vec& b) const { return Vec(x - b.x, y - b.y, z - b.z); }
 
-  auto operator*(const double b) const { return Vec(x * b, y * b, z * b); }
+  const auto operator*(const double b) const { return Vec(x * b, y * b, z * b); }
 
-  auto mult(const Vec& b) const { return Vec(x * b.x, y * b.y, z * b.z); }
+  const auto mult(const Vec& b) const { return Vec(x * b.x, y * b.y, z * b.z); }
 
-  auto& norm() { return *this = *this * (1 / sqrt(x * x + y * y + z * z)); }
+  const auto& norm() { return *this = *this * (1 / sqrt(x * x + y * y + z * z)); }
 
-  auto dot(const Vec& b) const { return x * b.x + y * b.y + z * b.z; }
+  const auto dot(const Vec& b) const { return x * b.x + y * b.y + z * b.z; }
 
   // cross:
-  auto operator%(Vec& b) { return Vec(y * b.z - z * b.y, z * b.x - x * b.z, x * b.y - y * b.x); }
+  auto operator%(Vec& b) const { return Vec(y * b.z - z * b.y, z * b.x - x * b.z, x * b.y - y * b.x); }
 };
 
 struct Ray
 {
-
-  Vec o, d;
+  Vec o;
+  Vec d;
 
   Ray(Vec o_, Vec d_)
     : o(o_)
@@ -81,7 +81,7 @@ struct Sphere
   {}
 
   // returns distance, 0 if nohit
-  auto intersect(const Ray& r) const
+  const auto intersect(const Ray& r) const
   {
     double t;
     const auto op = p - r.o; // Solve t^2*d.d + 2*t*(o-p).d + (o-p).(o-p)-R^2 = 0
@@ -99,7 +99,7 @@ struct Sphere
   }
 };
 
-Sphere spheres[] = {
+const Sphere spheres[] = {
   // Scene: radius, position, emission, color, material
   Sphere(1e5, Vec(1e5 + 1, 40.8, 81.6), Vec(), Vec(.75, .25, .25), DIFF),   // Left
   Sphere(1e5, Vec(-1e5 + 99, 40.8, 81.6), Vec(), Vec(.25, .25, .75), DIFF), // Rght
@@ -112,17 +112,17 @@ Sphere spheres[] = {
   Sphere(600, Vec(50, 681.6 - .27, 81.6), Vec(12, 12, 12), Vec(), DIFF),    // Lite
 };
 
-inline auto clamp(const auto x)
+inline const auto clamp(const auto x)
 {
   return x < 0 ? 0.0 : x > 1 ? 1.0 : x;
 }
 
-inline auto toInt(const auto x)
+inline const auto toInt(const auto x)
 {
   return int(pow(clamp(x), 1 / 2.2) * 255 + .5);
 }
 
-inline auto intersect(const Ray& r, double& t, int& id)
+inline const auto intersect(const Ray& r, double& t, int& id)
 {
   double d;
   const auto n = sizeof(spheres) / sizeof(Sphere);
@@ -137,7 +137,7 @@ inline auto intersect(const Ray& r, double& t, int& id)
   return t < inf;
 }
 
-Vec radiance(const Ray& r, int depth, unsigned short* Xi)
+const auto radiance(const Ray& r, int depth, unsigned short* Xi)
 {
   double t;    // distance to intersection
   auto id = 0; // id of intersected object
@@ -205,8 +205,8 @@ Vec radiance(const Ray& r, int depth, unsigned short* Xi)
   const auto RP = Re / P;
   const auto TP = Tr / (1 - P);
 
-  return obj.e + f.mult(depth > 2 ? (erand48(Xi) < P ? // Russian roulette
-                                       radiance(reflRay, depth, Xi) * RP
+  // Russian roulette
+  return obj.e + f.mult(depth > 2 ? (erand48(Xi) < P ? radiance(reflRay, depth, Xi) * RP
                                                      : radiance(Ray(x, tdir), depth, Xi) * TP)
                                   : radiance(reflRay, depth, Xi) * Re + radiance(Ray(x, tdir), depth, Xi) * Tr);
 }
@@ -219,10 +219,10 @@ int main(int argc, char* argv[])
 
   Ray cam(Vec(50, 52, 295.6), Vec(0, -0.042612, -1).norm()); // cam pos, dir
 
-  auto cx = Vec(w * .5135 / h);
+  const auto cx = Vec(w * .5135 / h);
   const auto cy = (cx % cam.d).norm() * .5135;
-  Vec r;
   auto* const c = new Vec[w * h];
+  Vec r;
 
   // Loop over image rows
 #pragma omp parallel for schedule(dynamic, 1) private(r) // OpenMP
@@ -251,9 +251,9 @@ int main(int argc, char* argv[])
   }
 
 #ifdef NDEBUG
-  auto* f = fopen("image.ppm", "w"); // Write image to PPM file.
+  auto* const f = fopen("image.ppm", "w"); // Write image to PPM file.
 #else
-  auto* f = fopen("imaged.ppm", "w"); // Write image to PPM file.
+  auto* const f = fopen("imaged.ppm", "w"); // Write image to PPM file.
 #endif
 
   fprintf(f, "P3\n%d %d\n%d\n", w, h, 255);
