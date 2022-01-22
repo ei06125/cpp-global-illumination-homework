@@ -66,9 +66,11 @@ enum Refl_t
 struct Sphere
 {
 
-  double rad;  // radius
-  Vec p, e, c; // position, emission, color
-  Refl_t refl; // reflection type (DIFFuse, SPECular, REFRactive)
+  const double rad;  // radius
+  const Vec p;       // position
+  const Vec e;       // emission
+  const Vec c;       // color
+  const Refl_t refl; // reflection type (DIFFuse, SPECular, REFRactive)
 
   Sphere(double rad_, Vec p_, Vec e_, Vec c_, Refl_t refl_)
     : rad(rad_)
@@ -199,7 +201,8 @@ Vec radiance(const Ray& r, int depth, unsigned short* Xi)
   auto c = 1 - (into ? -ddn : tdir.dot(n));
   auto Re = R0 + (1 - R0) * c * c * c * c * c;
   auto Tr = 1 - Re;
-  auto P = .25 + .5 * Re, RP = Re / P;
+  auto P = .25 + .5 * Re;
+  auto RP = Re / P;
   auto TP = Tr / (1 - P);
 
   return obj.e + f.mult(depth > 2 ? (erand48(Xi) < P ? // Russian roulette
