@@ -148,12 +148,12 @@ Vec radiance(const Ray& r, int depth, unsigned short* Xi)
 
   const auto& obj = spheres[id]; // the hit object
 
-  auto x = r.o + r.d * t;
-  auto n = (x - obj.p).norm();
-  auto nl = n.dot(r.d) < 0 ? n : n * -1;
+  const auto x = r.o + r.d * t;
+  const auto n = (x - obj.p).norm();
+  const auto nl = n.dot(r.d) < 0 ? n : n * -1;
   auto f = obj.c;
 
-  auto p = f.x > f.y && f.x > f.z ? f.x : f.y > f.z ? f.y : f.z; // max refl
+  const auto p = f.x > f.y && f.x > f.z ? f.x : f.y > f.z ? f.y : f.z; // max refl
 
   if (++depth > 5) {
     if (erand48(Xi) < p) {
@@ -164,13 +164,13 @@ Vec radiance(const Ray& r, int depth, unsigned short* Xi)
   }
 
   if (obj.refl == DIFF) { // Ideal DIFFUSE reflection
-    auto r1 = 2 * M_PI * erand48(Xi);
-    auto r2 = erand48(Xi);
-    auto r2s = sqrt(r2);
+    const auto r1 = 2 * M_PI * erand48(Xi);
+    const auto r2 = erand48(Xi);
+    const auto r2s = sqrt(r2);
     auto w = nl;
     auto u = ((fabs(w.x) > .1 ? Vec(0, 1) : Vec(1)) % w).norm();
-    auto v = w % u;
-    auto d = (u * cos(r1) * r2s + v * sin(r1) * r2s + w * sqrt(1 - r2)).norm();
+    const auto v = w % u;
+    const auto d = (u * cos(r1) * r2s + v * sin(r1) * r2s + w * sqrt(1 - r2)).norm();
 
     return obj.e + f.mult(radiance(Ray(x, d), depth, Xi));
 
@@ -180,12 +180,12 @@ Vec radiance(const Ray& r, int depth, unsigned short* Xi)
 
   Ray reflRay(x, r.d - n * 2 * n.dot(r.d)); // Ideal dielectric REFRACTION
 
-  auto into = n.dot(nl) > 0; // Ray from outside going in?
+  const auto into = n.dot(nl) > 0; // Ray from outside going in?
 
-  auto nc = 1.;
-  auto nt = 1.5;
-  auto nnt = into ? nc / nt : nt / nc;
-  auto ddn = r.d.dot(nl);
+  const auto nc = 1.0;
+  const auto nt = 1.5;
+  const auto nnt = into ? nc / nt : nt / nc;
+  const auto ddn = r.d.dot(nl);
   double cos2t;
 
   // Total internal reflection
@@ -193,17 +193,17 @@ Vec radiance(const Ray& r, int depth, unsigned short* Xi)
     return obj.e + f.mult(radiance(reflRay, depth, Xi));
   }
 
-  Vec tdir = (r.d * nnt - n * ((into ? 1 : -1) * (ddn * nnt + sqrt(cos2t)))).norm();
+  const Vec tdir = (r.d * nnt - n * ((into ? 1 : -1) * (ddn * nnt + sqrt(cos2t)))).norm();
 
-  auto a = nt - nc;
-  auto b = nt + nc;
-  auto R0 = a * a / (b * b);
-  auto c = 1 - (into ? -ddn : tdir.dot(n));
-  auto Re = R0 + (1 - R0) * c * c * c * c * c;
-  auto Tr = 1 - Re;
-  auto P = .25 + .5 * Re;
-  auto RP = Re / P;
-  auto TP = Tr / (1 - P);
+  const auto a = nt - nc;
+  const auto b = nt + nc;
+  const auto R0 = a * a / (b * b);
+  const auto c = 1 - (into ? -ddn : tdir.dot(n));
+  const auto Re = R0 + (1 - R0) * c * c * c * c * c;
+  const auto Tr = 1 - Re;
+  const auto P = .25 + .5 * Re;
+  const auto RP = Re / P;
+  const auto TP = Tr / (1 - P);
 
   return obj.e + f.mult(depth > 2 ? (erand48(Xi) < P ? // Russian roulette
                                        radiance(reflRay, depth, Xi) * RP
