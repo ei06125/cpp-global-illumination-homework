@@ -19,7 +19,9 @@ auto erand48(unsigned short xsubi[3])
 struct Vec
 { // Usage: time ./smallpt 5000 && xv image.ppm
 
-  double x, y, z; // position, also color (r,g,b)
+  double x; // also r
+  double y; // also g
+  double z; // also b
 
   Vec(double x_ = 0.0, double y_ = 0.0, double z_ = 0.0)
     : x(x_)
@@ -31,7 +33,7 @@ struct Vec
 
   auto operator-(const Vec& b) const { return Vec(x - b.x, y - b.y, z - b.z); }
 
-  auto operator*(double b) const { return Vec(x * b, y * b, z * b); }
+  auto operator*(const double b) const { return Vec(x * b, y * b, z * b); }
 
   auto mult(const Vec& b) const { return Vec(x * b.x, y * b.y, z * b.z); }
 
@@ -80,9 +82,9 @@ struct Sphere
   auto intersect(const Ray& r) const
   {
     double t;
-    auto op = p - r.o; // Solve t^2*d.d + 2*t*(o-p).d + (o-p).(o-p)-R^2 = 0
-    auto eps = 1e-4;
-    auto b = op.dot(r.d);
+    const auto op = p - r.o; // Solve t^2*d.d + 2*t*(o-p).d + (o-p).(o-p)-R^2 = 0
+    const auto eps = 1e-4;
+    const auto b = op.dot(r.d);
     auto det = b * b - op.dot(op) + rad * rad;
 
     if (det < 0) {
@@ -108,12 +110,12 @@ Sphere spheres[] = {
   Sphere(600, Vec(50, 681.6 - .27, 81.6), Vec(12, 12, 12), Vec(), DIFF),    // Lite
 };
 
-inline auto clamp(auto x)
+inline auto clamp(const auto x)
 {
   return x < 0 ? 0.0 : x > 1 ? 1.0 : x;
 }
 
-inline auto toInt(auto x)
+inline auto toInt(const auto x)
 {
   return int(pow(clamp(x), 1 / 2.2) * 255 + .5);
 }
@@ -121,8 +123,8 @@ inline auto toInt(auto x)
 inline auto intersect(const Ray& r, double& t, int& id)
 {
   double d;
-  auto n = sizeof(spheres) / sizeof(Sphere);
-  auto inf = t = 1e20;
+  const auto n = sizeof(spheres) / sizeof(Sphere);
+  const auto inf = t = 1e20;
 
   for (int i = int(n); i--;) {
     if ((d = spheres[i].intersect(r)) && d < t) {
