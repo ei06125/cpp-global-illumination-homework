@@ -208,16 +208,16 @@ Vec radiance(const Ray& r, int depth, unsigned short* Xi)
 
 int main(int argc, char* argv[])
 {
-  auto w = 1024;
-  auto h = 768;
-  auto samps = argc == 2 ? atoi(argv[1]) / 4 : 1; // # samples
+  const auto w = 1024;
+  const auto h = 768;
+  const auto samps = argc == 2 ? atoi(argv[1]) / 4 : 1; // # samples
 
   Ray cam(Vec(50, 52, 295.6), Vec(0, -0.042612, -1).norm()); // cam pos, dir
 
   auto cx = Vec(w * .5135 / h);
-  auto cy = (cx % cam.d).norm() * .5135;
+  const auto cy = (cx % cam.d).norm() * .5135;
   Vec r;
-  auto* c = new Vec[w * h];
+  auto* const c = new Vec[w * h];
 
   // Loop over image rows
 #pragma omp parallel for schedule(dynamic, 1) private(r) // OpenMP
@@ -230,9 +230,9 @@ int main(int argc, char* argv[])
         // 2x2 subpixel cols
         for (auto sx = 0; sx < 2; sx++, r = Vec()) {
           for (auto s = 0; s < samps; s++) {
-            auto r1 = 2 * erand48(Xi), dx = r1 < 1 ? sqrt(r1) - 1 : 1 - sqrt(2 - r1);
+            const auto r1 = 2 * erand48(Xi), dx = r1 < 1 ? sqrt(r1) - 1 : 1 - sqrt(2 - r1);
 
-            auto r2 = 2 * erand48(Xi), dy = r2 < 1 ? sqrt(r2) - 1 : 1 - sqrt(2 - r2);
+            const auto r2 = 2 * erand48(Xi), dy = r2 < 1 ? sqrt(r2) - 1 : 1 - sqrt(2 - r2);
 
             auto d = cx * (((sx + .5 + dx) / 2 + x) / w - .5) + cy * (((sy + .5 + dy) / 2 + y) / h - .5) + cam.d;
 
